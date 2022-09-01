@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     "django.forms",
     # third party
     "rest_framework",
-    "drf_spectacular",
+    # "drf_spectacular",
+    "calc.apps.CalcConfig",
     # apps
     # "images.apps.ImagesConfig",
 ]
@@ -47,6 +48,7 @@ if DEBUG:
     INSTALLED_APPS.extend(("debug_toolbar",))
 
 ROOT_URLCONF = "config.urls"
+X_FRAME_OPTIONS = 'ALLOW-FROM localhost'
 
 TEMPLATES = [
     {
@@ -71,10 +73,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
+        "NAME": "db",
         "USER": "postgres",
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": "db",
+        # "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "PASSWORD": "123456",
+        # "HOST": "db",
+        "HOST": "localhost",
         "PORT": 5432,
         "CONN_MAX_AGE": 600,
     }
@@ -129,4 +133,7 @@ SITE_ID = 1
 # REST
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }

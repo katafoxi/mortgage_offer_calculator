@@ -1,0 +1,40 @@
+curl --location --request POST 'http://localhost:8000/api/offer/' \
+--form 'bank_name="Test_bank_name"' \
+--form 'term_min="10"' \
+--form 'term_max="30"' \
+--form 'rate_min="1.8"' \
+--form 'rate_max="9.8"' \
+--form 'payment_min="1000000"' \
+--form 'payment_max="10000000"'
+
+curl --location --request POST 'http://localhost:8000/api/offer/' \
+--form 'bank_name="Test_bank_name2"' \
+--form 'term_min="5"' \
+--form 'term_max="30"' \
+--form 'rate_min="1"' \
+--form 'rate_max="3"' \
+--form 'payment_min="100"' \
+--form 'payment_max="10000000"'
+
+curl --location --request POST 'http://localhost:8000/api/offer/' \
+--form 'bank_name="Test_bank_name"' \
+--form 'term_min="10"' \
+--form 'term_max="30"' \
+--form 'rate_min="8"' \
+--form 'rate_max="9"' \
+--form 'payment_min="1000000"' \
+--form 'payment_max="10000000"'
+
+
+curl --location --request PATCH 'http://localhost:8000/api/offer/16/' \
+--form 'bank_name="Test_bank_name"' \
+--form 'term_min="10"' \
+--form 'term_max="30"' \
+--form 'rate_min="1.8"' \
+--form 'rate_max="9.8"' \
+--form 'payment_min="1000000"' \
+--form 'payment_max="10000000"'
+
+curl --location --request GET 'http://localhost:8000/api/offer/?rate_min=&rate_max=&payment_min=50000&payment_max=70000&order=-rate&price=10000000&deposit=10&term=20'
+
+curl --location --request GET http://localhost:8000/api/offer/?price=10000000&deposit=10&term=20
