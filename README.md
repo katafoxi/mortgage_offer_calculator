@@ -1,5 +1,6 @@
-![image.png](./image.png)
+
 Задание выполнено
+[картинка](https://drive.google.com/file/d/1K2JxLWIu5gmb4lKXXcvyI7AaQ_WBHvaW/view?usp=sharing)
 #### Посмотреть результат
 ```shell
 docker stop $(docker ps -aq)
