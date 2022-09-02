@@ -6,6 +6,7 @@ menu = [{'title': 'Главная', 'url_name': 'main'},
 
 
 class DataMixin:
+    """Класс для красивого меню. Самый важный класс в приложении"""
 
     def get_user_context(self, **kwargs):
         context = kwargs

@@ -35,6 +35,13 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        """
+        Т.к. поле bank_name модели ипотечного предложения ссылается на модель Bank,
+        то для корректного создания ипотечного предложения по API, переопределяется методы create и update.
+
+        :param validated_data: нормализованные данные
+        :return: Offer.object
+        """
         bank_name, created = Bank.objects.get_or_create(name=validated_data.pop("bank_name"))
         new_offer = Offer.objects.create(bank_name=bank_name, **validated_data)
         new_offer.save()
@@ -52,53 +59,69 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     @staticmethod
-    def calc_monthly_payment(params, instance):
-        price = int(params['price'])
-        deposit = int(params['deposit'])
-        term = int(params['term'])
-        ratio_money = (price - instance.payment_min) / (instance.payment_max - instance.payment_min)
-        ratio_time = (term - instance.term_min) / (instance.term_max - instance.term_min)
-        mean_ratio = (ratio_money + ratio_time) / 2  # среднее отношение по телу и времени
+    def get_monthly_payment(params: dict, proposed_rate) -> int:
+        """
+        Метод для расчета размера ежемесячного платежа по предлагаемой процентной ставке.
+        Формула расчета ежемесячного платежа с сайта https://mortgage-calculator.ru/
 
-        # так как в большинстве случаев ставка меньше чем запрашиваемая сумма больше, то используем обратное отношение
-        # таким образом выбираем предлагаемую процентную ставку годовых в промежутке min-max
-        corresponding_rate = instance.rate_min + (instance.rate_max - instance.rate_min) * (1 - mean_ratio)
-
-        # Формула расчета ежемесячного платежа с сайта https://mortgage-calculator.ru/
-        monthly_rate = corresponding_rate / 12 / 100
+        :param proposed_rate:
+        :param params: словарь с параметрами get-запроса.
+        :return:
+        """
+        price = params['price']
+        deposit = params['deposit']
+        term = params['term']
+        monthly_rate = proposed_rate / 12 / 100
         term_mortgage_months = term * 12
         total_rate = (1 + monthly_rate) ** term_mortgage_months
         credit_amount = price * (1 - deposit / 100)
         monthly_payment = (credit_amount * monthly_rate * total_rate) / (total_rate - 1)
-        # print('price=', price)
-        # print('term=', term)
-        # print('ratio_money=', ratio_money)
-        # print('ratio_time', ratio_time)
-        # print('mean_ratio', mean_ratio)
-        # print('cor_rate=', corresponding_rate)
-        # print('term_mort_m=', term_mortgage_months)
-        # print('total_rate=', total_rate)
-        # print('credit_amount', credit_amount)
-        # print('payment=', monthly_payment)
-        return {'monthly_payment': int(monthly_payment),  # Платеж в месяц
-                'corresponding_rate': round(corresponding_rate, 2),  # соответствующая телу и сроку кредита ставка
-                'total_rate': round(total_rate, 2)  # общая ставка из формулы
-                }
+        return monthly_payment
 
-    def to_representation(self, instance):
+    @staticmethod
+    def get_proposed_rate(params: dict, instance: Offer) -> float:
+        """
+        Метод для расчета предлагаемой процентной ставки ипотечного предложения банка.
+        Предлагаемая ставка обратно зависит от среднего арифметического
+        коэффициентов тела кредита (ratio_money) и срока займа (ratio_time).
+        Принимается что:
+         -чем больше необходимая клиенту сумма, тем ниже ставка,
+         -чем на больший срок берется ипотека, тем ниже ставка
+         Например:
+          при максимальном теле кредита И максимальном сроке займа ставка минимальная.
+
+        :param params: словарь с параметрами get-запроса.
+        :param instance: сериализуемый объект ипотечного предложения.
+        :return: proposed_rate предлагаемая процентная ставка.
+        """
+
+        price = params['price']
+        term = params['term']
+        ratio_money = (price - instance.payment_min) / (instance.payment_max - instance.payment_min)
+        ratio_time = (term - instance.term_min) / (instance.term_max - instance.term_min)
+        mean_ratio = (ratio_money + ratio_time) / 2  # среднее отношение по телу кредита и срока займа
+        proposed_rate = instance.rate_min + (instance.rate_max - instance.rate_min) * (1 - mean_ratio)
+        return proposed_rate
+
+    def to_representation(self, instance: Offer) -> dict:
+        """
+        Метод добавляет с сериализованному объекту предложения  поле 'payment'. Если в запросе указан тип сортировки
+        'по ставке', то добавляется еще поле 'rate', для проведения сортировки результатов по предлагаемой
+        процентной ставке, ввиду отсутствия смысла сортировки по 'голым' диапазонам ставок.
+
+        !Важное! Метод наверняка будет валить интеграционные тесты.
+
+        :param instance: объект ипотечного предложения
+        :return: сериализованный объект ипотечного предложения
+        """
         params = self.context.get('request').query_params
         representation = super().to_representation(instance)
         if params:
-            additional_fields = OfferSerializer.calc_monthly_payment(params, instance)
-            representation['payment'] = additional_fields['monthly_payment']
-
-            # TODO т.к. по тексту задания неясно по какой ставке фильтровать, то здесь можно выбрать:
-            #  по предлагаемой ставке (corresponding_rate) (обратно эквивалентна телу и сроку кредита), или
-            #  по общей ставке (total_rate) рассчитывается по общепринятой формуле
-
+            proposed_rate = OfferSerializer.get_proposed_rate(params, instance)
+            representation['payment'] = OfferSerializer.get_monthly_payment(params, proposed_rate)
             if "order" in params.keys():
                 if params["order"] in ['rate', '-rate']:
-                    representation['rate'] = additional_fields['corresponding_rate']
+                    representation['rate'] = proposed_rate
             return representation
         else:
             return representation

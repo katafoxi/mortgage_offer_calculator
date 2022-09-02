@@ -48,7 +48,7 @@ if DEBUG:
     INSTALLED_APPS.extend(("debug_toolbar",))
 
 ROOT_URLCONF = "config.urls"
-X_FRAME_OPTIONS = 'ALLOW-FROM localhost'
+# X_FRAME_OPTIONS = 'ALLOW-FROM localhost'
 
 TEMPLATES = [
     {
@@ -75,10 +75,10 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "db",
         "USER": "postgres",
-        # "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "PASSWORD": "123456",
-        # "HOST": "db",
-        "HOST": "localhost",
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        # "PASSWORD": "123456",
+        "HOST": "db",
+        # "HOST": "localhost",
         "PORT": 5432,
         "CONN_MAX_AGE": 600,
     }
