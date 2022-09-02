@@ -59,7 +59,7 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     @staticmethod
-    def get_monthly_payment(params: dict, proposed_rate) -> int:
+    def get_monthly_payment(params: dict, proposed_rate: float):
         """
         Метод для расчета размера ежемесячного платежа по предлагаемой процентной ставке.
         Формула расчета ежемесячного платежа с сайта https://mortgage-calculator.ru/
@@ -68,15 +68,15 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         :param params: словарь с параметрами get-запроса.
         :return:
         """
-        price = params['price']
-        deposit = params['deposit']
-        term = params['term']
+        price = int(params['price'])
+        deposit = int(params['deposit'])
+        term = int(params['term'])
         monthly_rate = proposed_rate / 12 / 100
         term_mortgage_months = term * 12
         total_rate = (1 + monthly_rate) ** term_mortgage_months
         credit_amount = price * (1 - deposit / 100)
         monthly_payment = (credit_amount * monthly_rate * total_rate) / (total_rate - 1)
-        return monthly_payment
+        return int(monthly_payment)
 
     @staticmethod
     def get_proposed_rate(params: dict, instance: Offer) -> float:
@@ -95,13 +95,13 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         :return: proposed_rate предлагаемая процентная ставка.
         """
 
-        price = params['price']
-        term = params['term']
+        price = int(params['price'])
+        term = int(params['term'])
         ratio_money = (price - instance.payment_min) / (instance.payment_max - instance.payment_min)
         ratio_time = (term - instance.term_min) / (instance.term_max - instance.term_min)
         mean_ratio = (ratio_money + ratio_time) / 2  # среднее отношение по телу кредита и срока займа
         proposed_rate = instance.rate_min + (instance.rate_max - instance.rate_min) * (1 - mean_ratio)
-        return proposed_rate
+        return round(proposed_rate, 2)
 
     def to_representation(self, instance: Offer) -> dict:
         """
@@ -109,7 +109,7 @@ class OfferSerializer(serializers.HyperlinkedModelSerializer):
         'по ставке', то добавляется еще поле 'rate', для проведения сортировки результатов по предлагаемой
         процентной ставке, ввиду отсутствия смысла сортировки по 'голым' диапазонам ставок.
 
-        !Важное! Метод наверняка будет валить интеграционные тесты.
+        !Важное! Метод наверняка будет валить интеграционные тесты из-за доп.поля [rate]
 
         :param instance: объект ипотечного предложения
         :return: сериализованный объект ипотечного предложения
