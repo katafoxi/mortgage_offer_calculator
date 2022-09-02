@@ -1,3 +1,11 @@
+![image.png](./image.png)
+Задание выполнено
+#### Посмотреть результат
+```shell
+docker stop $(docker ps -aq)
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up --build
+```
+
 # Шаблон тестового задания
 
 ## Техническое задание
