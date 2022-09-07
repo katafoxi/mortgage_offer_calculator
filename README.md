@@ -1,13 +1,18 @@
 
-Задание выполнено
-[картинка](https://drive.google.com/file/d/1K2JxLWIu5gmb4lKXXcvyI7AaQ_WBHvaW/view?usp=sharing)
-#### Посмотреть результат
+![mortgage_offer_calculator](https://user-images.githubusercontent.com/83884504/188901398-124b4894-20bf-4f1a-9a32-f1e68aacc123.png)
+#### Запуск контейнеров
 ```shell
 docker stop $(docker ps -aq)
 docker-compose -f docker-compose.yml -f docker-compose.override.yml up --build
 ```
 
-# Шаблон тестового задания
+----
+
+### Используемый стек
+1) Django. 
+2) [DRF](https://www.django-rest-framework.org/). 
+
+----
 
 ## Техническое задание
 
@@ -41,26 +46,6 @@ docker-compose -f docker-compose.yml -f docker-compose.override.yml up --build
 1. Сортировка ипотечных предложений по ставке(процент по ипотеке) и по платежу. 
 2. Тесты для всего вышеперечилсенного.
 
-----
-
-### Используемый стек
-1) Django. Обязательно
-2) [DRF](https://www.django-rest-framework.org/). Обязательно
-3) [django-filters](https://django-filter.readthedocs.io/en/stable/guide/usage.html). По желанию
-
-----
-
-### Важно №1! Для облегчения проверки задания, ваше решение будет проверено интеграционным тестированием. Прохождение тестов является не обязательным условием сдачи задания.
-
-### Важно №2! Тестовые задания на других площадках (github, gitlab) проверяться на будут.
-
-----
-
-#### Для начала работы, сделайте форк репозитория (и сделайте его приватным), склонируйте его и начинайте разработку.
-
-Удачи!
-
-PS. Если не получается разобраться с docker, то ничего страшного. Просто разработайте сервис без него, как вам удобнее.
 
 ----
 ### Локальный запуск приложения
@@ -76,6 +61,3 @@ docker-compose exec backend sh
 Сервис будет доступен по ссылке [http://localhost:8000/admin/login/?next=/admin/](http://localhost:8000/admin/login/?next=/admin/)
 
 ----
-О выполнении задания можно уведомить по почте a.kuzmenko@idaproject.com
-
-Так же можете задать вопросы лично мне (Telegram): @egor1344
